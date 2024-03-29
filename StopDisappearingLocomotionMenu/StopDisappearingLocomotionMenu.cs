@@ -30,13 +30,23 @@ namespace StopDisappearingLocomotionMenu
             Config.Save(true);
 
             var commonToolType = typeof(InteractionHandler);
-            var asyncWrapperType = commonToolType.GetNestedTypes(AccessTools.allDeclared).First(type => type.Name == "<>c__DisplayClass349_0");
-            var asyncType = asyncWrapperType.GetNestedTypes(AccessTools.allDeclared).First(type => type.Name == "<<OpenContextMenu>b__0>d");
-            var methodToPatch = asyncType.GetMethod("MoveNext", AccessTools.allDeclared);
+            foreach (Type t in commonToolType.GetNestedTypes(AccessTools.allDeclared))
+            {
+                try
+                {
+                    var asyncType = t.GetNestedTypes(AccessTools.allDeclared).First(type => type.Name == "<<OpenContextMenu>b__0>d");
+                    var methodToPatch = asyncType.GetMethod("MoveNext", AccessTools.allDeclared);
 
-            var transpilerMethod = typeof(StopDisappearingLocomotionMenu).GetMethod(nameof(ContextMenuGeneratorTranspiler), AccessTools.allDeclared);
+                    var transpilerMethod = typeof(StopDisappearingLocomotionMenu).GetMethod(nameof(ContextMenuGeneratorTranspiler), AccessTools.allDeclared);
 
-            harmony.Patch(methodToPatch, transpiler: new HarmonyMethod(transpilerMethod));
+                    harmony.Patch(methodToPatch, transpiler: new HarmonyMethod(transpilerMethod));
+                    break;
+                }
+                catch (InvalidOperationException)
+                {
+                    continue;
+                }
+            }
         }
 
         private static bool CheckHideLocomotionAndScale()
